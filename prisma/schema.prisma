@@ -39,3 +39,10 @@ model Room {
   spots Int?
   occupants Student[]
 }
+
+model Authentication {
+  id Int @id @default(autoincrement())
+  auth String @default(uuid())
+  created DateTime @default(now())
+  lastUsed DateTime?
+}
