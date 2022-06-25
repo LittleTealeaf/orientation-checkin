@@ -20,11 +20,7 @@ export default function TabView({ items }: { items: TabItem[] }) {
       </Box>
       {items.map((tab, index) => (
         <div key={index} role="tabpanel" hidden={currentTab !== index} id={`tab-${index}`}>
-          {currentTab === index && (
-            <Box sx={{ p: 3 }}>
-              <Typography>{tab.content}</Typography>
-            </Box>
-          )}
+          <Box sx={{ p: 3 }}>{tab.content}</Box>
         </div>
       ))}
     </>

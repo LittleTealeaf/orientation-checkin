@@ -1,9 +1,24 @@
 import { prisma, PrismaClient } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
 
-const client = new PrismaClient();
+export const fetchAPI = async (path: string, auth: string) =>
+  fetch(path, {
+    method: "POST",
+    headers: {
+      authorization: auth,
+    },
+  }).then((response) => response.json());
+
+export const buildSWRFetcher = (auth: string) => (args: string) =>
+  fetch(args, {
+    method: "POST",
+    headers: {
+      authorization: auth,
+    },
+  }).then((response) => response.json());
 
 async function cleanAuthKeys() {
+  const client = new PrismaClient();
   await client.authentication.deleteMany({
     where: {
       id: {
@@ -20,13 +35,14 @@ async function cleanAuthKeys() {
 }
 
 export async function createAuthKey() {
+  const client = new PrismaClient();
   await cleanAuthKeys();
   return (await client.authentication.create({ data: {} })).auth;
 }
 
 export async function authenticate(req: NextApiRequest, res: NextApiResponse): Promise<boolean> {
+  const client = new PrismaClient();
   const { authorization } = req.headers;
-
   if (authorization == null) {
     res.status(401).json({ message: "Authorization not included" });
   } else if (

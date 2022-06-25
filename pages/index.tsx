@@ -1,30 +1,28 @@
 import type { NextPage } from "next";
 import React, { useEffect, useState } from "react";
 import TabView from "components/TabView";
+import AddIcon from "@mui/icons-material/Add";
 
-import { PrismaClient, Room } from "@prisma/client";
-import { Button, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
-import { createAuthKey } from "libs/authentication";
+import { Room } from "@prisma/client";
+import { Button, Dialog, Fab, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
+import { buildSWRFetcher, createAuthKey, fetchAPI } from "libs/authentication";
+import { NotNull } from "components/Dynamic";
+import useSWR, { mutate } from "swr";
 
-const RoomsTab = ({ auth }: { auth: string }) => {
-  const [rooms, setRooms] = useState<Room[]>([]);
+import { createContext, useContext } from "react";
 
-  function updateRooms() {
-    fetch("/api/rooms/get", {
-      method: "POST",
-      headers: {
-        authorization: auth,
-      },
-    })
-      .then((res) => res.json())
-      .then(setRooms);
-  }
+const AuthContext = createContext("");
 
-  useEffect(updateRooms, [auth]);
+const RoomsTab = () => {
+  const { data: rooms } = useSWR<Room[]>("/api/rooms/get", buildSWRFetcher(useAuthContext()));
+
+  const auth = useAuthContext();
+
+  const [editing, setEditing] = useState<Room | null>(null);
 
   return (
     <>
-      <Table sx={{ minWidth: 650 }} aria-label="Room Table">
+      <Table sx={{ minWidth: 650 }} size="small" aria-label="Room Table">
         <TableHead>
           <TableRow>
             <TableCell>Building</TableCell>
@@ -34,18 +32,44 @@ const RoomsTab = ({ auth }: { auth: string }) => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {rooms.map((room, index) => (
-            <TableRow key={index}>
-              <TableCell>{room.building}</TableCell>
-              <TableCell>{room.number}</TableCell>
-              <TableCell>{room.spots}</TableCell>
-              <TableCell>
-                <Button onClick={updateRooms}>Edit</Button>
-              </TableCell>
-            </TableRow>
-          ))}
+          {rooms == null ? (
+            <></>
+          ) : (
+            rooms.map((room, index) => (
+              <TableRow key={index}>
+                <TableCell>{room.building}</TableCell>
+                <TableCell>{room.number}</TableCell>
+                <TableCell>{room.spots}</TableCell>
+                <TableCell align="right">
+                  <Button onClick={() => setEditing(room)}>Edit</Button>
+                  <Button onClick={() => {
+                    fetchAPI(`/api/rooms/delete?id=${room.id}`,auth);
+                    mutate('/api/rooms/get')
+                  }}>Delete</Button>
+                </TableCell>
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
+      <Fab
+        sx={{
+          position: "absolute",
+          bottom: 50,
+          right: 50,
+        }}
+      >
+        <AddIcon />
+      </Fab>
+      <Dialog open={editing != null} onClose={() => setEditing(null)}>
+        {NotNull(editing, () => (
+          <>
+            <div style={{
+              padding: "10px"
+            }}></div>
+          </>
+        ))}
+      </Dialog>
     </>
   );
 };
@@ -53,18 +77,21 @@ const RoomsTab = ({ auth }: { auth: string }) => {
 const Home = ({ auth }: { auth: string }) => {
   return (
     <>
-      <TabView
-        items={[
-          {
-            label: "Master Sheet",
-            content: <>testing</>,
-          },
-          {
-            label: "Rooms",
-            content: <RoomsTab auth={auth} />,
-          },
-        ]}
-      />
+      <AuthContext.Provider value={auth}>
+        <TabView
+          items={[
+            {
+              label: "Rooms",
+              content: <RoomsTab />,
+            },
+            {
+              label: "Master Sheet",
+              content: <>testing</>,
+            },
+
+          ]}
+        />
+      </AuthContext.Provider>
     </>
   );
 };
@@ -77,6 +104,10 @@ export async function getServerSideProps() {
       auth,
     },
   };
+}
+
+export function useAuthContext() {
+  return useContext(AuthContext);
 }
 
 export default Home;
