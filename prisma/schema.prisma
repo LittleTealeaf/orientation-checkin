@@ -12,30 +12,30 @@ datasource db {
 
 model Student {
   id Int @id @default(autoincrement())
-  nameFirst String
-  nameLast String
-  roomId Int
-  room Room @relation(fields: [roomId], references: [id])
-  groupId Int
+  nameFirst String?
+  nameLast String?
+  roomId Int?
+  room Room? @relation(fields: [roomId], references: [id])
+  groupId Int?
 }
 
 model OrientationGroup {
   id Int @id @default(autoincrement())
-  name String
+  name String?
 }
 
 model Staff {
   id Int @id @default(autoincrement())
-  login String
-  nameFirst String
-  nameLast String
-  groupId Int
+  login String?
+  nameFirst String?
+  nameLast String?
+  groupId Int?
 }
 
 model Room {
   id Int @id @default(autoincrement())
-  number Int
-  building String
-  spots Int
+  number Int?
+  building String?
+  spots Int?
   occupants Student[]
 }

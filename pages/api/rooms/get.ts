@@ -1,15 +1,21 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
+import { PrismaClient } from "@prisma/client";
 
-export type Parameters = {
-    id?: number;
-    groupId?: number;
-    groupName?: string;
-}
+const client = new PrismaClient();
 
-export default function handler(
-    req: NextApiRequest,
-    res: NextApiResponse
-) {
-    
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const { id } = req.query;
+
+  var query = {};
+
+  if (id != null) {
+    query = {
+      where: {
+        id: Number(id),
+      },
+    };
+  }
+
+  res.status(200).json(await client.room.findMany(query));
 }
