@@ -1,28 +1,27 @@
-import { Box, Tab, Tabs, Typography } from "@mui/material";
-import { useState } from "react";
+import { Box } from "@mui/material";
+import { ComponentProps, PropsWithChildren, PropsWithoutRef, PropsWithRef, SyntheticEvent, useState } from "react";
 
-export type TabItem = {
-  label: string;
-  content: JSX.Element;
-};
 
-export default function TabView({ items }: { items: TabItem[] }) {
-  const [currentTab, setCurrentTab] = useState(0);
+export function TabView({children}: ComponentProps<any> & {
+    children?: Element[] | Element
+}) {
 
-  return (
-    <>
-      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-        <Tabs value={currentTab} onChange={(e, i) => setCurrentTab(i)} aria-label="Sheets">
-          {items.map((t, i) => (
-            <Tab key={i} label={t.label} />
-          ))}
-        </Tabs>
-      </Box>
-      {items.map((tab, index) => (
-        <div key={index} role="tabpanel" hidden={currentTab !== index} id={`tab-${index}`}>
-          <Box sx={{ p: 3 }}>{tab.content}</Box>
-        </div>
-      ))}
-    </>
-  );
+    const tabs: Element[] = [];
+
+    if(children instanceof Array) {
+        children.forEach((item) => {
+            tabs.push(item);
+        })
+    } else {
+        tabs.push(children);
+    }
+
+    return <></>
+}
+
+export function TabPane({}: PropsWithChildren & {
+    label?: string;
+}) {
+
+    return <></>
 }
