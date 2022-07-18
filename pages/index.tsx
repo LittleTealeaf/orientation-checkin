@@ -12,7 +12,11 @@ const Home = ({ auth }: { auth: string }) => {
     <>
       <AuthContext.Provider value={auth}>
         <TabView>
-          <TabPane label="Hello"></TabPane>
+          <TabPane label="hello">
+            <div>
+              {"I am the world"}
+            </div>
+          </TabPane>
         </TabView>
       </AuthContext.Provider>
     </>
